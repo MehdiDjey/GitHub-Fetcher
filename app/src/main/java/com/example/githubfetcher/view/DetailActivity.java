@@ -16,7 +16,7 @@ import com.example.githubfetcher.model.Branches;
 import com.example.githubfetcher.model.Contributors;
 import com.example.githubfetcher.view.adapter.ListViewBranchesAdapter;
 import com.example.githubfetcher.view.adapter.ListViewContributorsAdapter;
-import com.example.githubfetcher.viewModels.BranchesContributorsViewModel;
+import com.example.githubfetcher.viewmodel.BranchesContributorsViewModel;
 
 import java.util.ArrayList;
 
@@ -104,5 +104,11 @@ public class DetailActivity extends AppCompatActivity {
         listViewBranche.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         listViewContribut.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        subscriptions.clear();
+        super.onDestroy();
     }
 }

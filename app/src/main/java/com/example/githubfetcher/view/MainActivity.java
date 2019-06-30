@@ -4,6 +4,10 @@ package com.example.githubfetcher.view;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
@@ -15,7 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.githubfetcher.R;
 import com.example.githubfetcher.model.ReposList;
 import com.example.githubfetcher.view.adapter.ListViewSearchAdapter;
-import com.example.githubfetcher.viewModels.SearchViewModel;
+import com.example.githubfetcher.viewmodel.SearchViewModel;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -27,8 +31,10 @@ public class MainActivity extends AppCompatActivity {
     private final CompositeDisposable subscriptions = new CompositeDisposable();
     @BindView(R.id.listview)
     RecyclerView listView;
-    @BindView(R.id.search_view)
-    SearchView searchView;
+
+    @BindView(R.id.progressBar)
+    ProgressBar progressBar;
+
     private ListViewSearchAdapter adapter;
     private SearchViewModel viewModel;
 
@@ -41,8 +47,9 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate: ");
         viewModel = ViewModelProviders.of(this).get(SearchViewModel.class);
         ButterKnife.bind(this);
+        progressBar = new ProgressBar(this);
         inidAdapter();
-        searchQuery();
+        //searchQuery();
     }
 
     void inidAdapter() {
@@ -55,33 +62,46 @@ public class MainActivity extends AppCompatActivity {
         listView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
     }
 
-    void searchQuery() {
-        Log.d(TAG, "searchQuery: ");
+    @Override
+    protected void onDestroy() {
+        subscriptions.clear();
+        super.onDestroy();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        final SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
                 Log.d(TAG, "onQueryTextSubmit: " + s);
-                subscriptions.add(viewModel.loadRepos(s.trim()).subscribe(this::onResponse, this::onFailure));
-
-                return false;
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(searchView.getWindowToken(), 0);
+                subscriptions.add(viewModel.loadRepos(s.trim())
+                        .doOnSubscribe(disposable -> progressBar.setVisibility(ProgressBar.VISIBLE))
+                        .doOnTerminate(() -> progressBar.setVisibility(ProgressBar.GONE))
+                        .subscribe(this::onResponse, this::onFailure));
+                return true;
             }
 
             @Override
             public boolean onQueryTextChange(String s) {
                 Log.d(TAG, "onQueryTextChange: " + s);
                 adapter.clearRepos();
-                return false;
+                return true;
             }
-
             private void onFailure(Throwable throwable) {
                 Log.e(TAG, throwable.getMessage());
             }
 
             private void onResponse(ReposList reposList) {
-                Log.i(TAG, "onResponse: " + reposList);
                 adapter.addRepos(reposList);
+                Log.i(TAG, "onResponse: " + reposList);
             }
         });
 
+        return super.onCreateOptionsMenu(menu);
     }
 }

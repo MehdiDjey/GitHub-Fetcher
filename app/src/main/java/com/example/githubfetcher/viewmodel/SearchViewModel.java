@@ -1,4 +1,4 @@
-package com.example.githubfetcher.viewModels;
+package com.example.githubfetcher.viewmodel;
 
 
 import androidx.lifecycle.ViewModel;
@@ -14,7 +14,9 @@ import io.reactivex.schedulers.Schedulers;
 @SuppressWarnings("WeakerAccess")
 public class SearchViewModel extends ViewModel {
 
+
     public Observable<ReposList> loadRepos(String search) {
+
         return GitHubApiService.getInstance().provideClient()
                 .searchRepos(search)
                 .subscribeOn(Schedulers.newThread())

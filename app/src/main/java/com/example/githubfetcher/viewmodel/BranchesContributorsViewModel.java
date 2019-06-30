@@ -1,4 +1,4 @@
-package com.example.githubfetcher.viewModels;
+package com.example.githubfetcher.viewmodel;
 
 
 import androidx.lifecycle.ViewModel;
