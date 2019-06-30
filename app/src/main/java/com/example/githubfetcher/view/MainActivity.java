@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ProgressBar;
 
@@ -47,9 +48,8 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate: ");
         viewModel = ViewModelProviders.of(this).get(SearchViewModel.class);
         ButterKnife.bind(this);
-        progressBar = new ProgressBar(this);
         inidAdapter();
-        //searchQuery();
+
     }
 
     void inidAdapter() {
@@ -80,8 +80,8 @@ public class MainActivity extends AppCompatActivity {
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(searchView.getWindowToken(), 0);
                 subscriptions.add(viewModel.loadRepos(s.trim())
-                        .doOnSubscribe(disposable -> progressBar.setVisibility(ProgressBar.VISIBLE))
-                        .doOnTerminate(() -> progressBar.setVisibility(ProgressBar.GONE))
+                        .doOnSubscribe(disposable -> progressBar.setVisibility(View.VISIBLE))
+                        .doOnTerminate(() -> progressBar.setVisibility(View.GONE))
                         .subscribe(this::onResponse, this::onFailure));
                 return true;
             }
